@@ -56,11 +56,6 @@ class _PathCommandWidgetState extends State<PathCommandWidget> {
                 ),
               ),
               onSelected: (value) {
-                FocusScopeNode currentScope = FocusScope.of(context);
-                if (!currentScope.hasPrimaryFocus && currentScope.hasFocus) {
-                  FocusManager.instance.primaryFocus!.unfocus();
-                }
-
                 if (value != null) {
                   widget.undoStack.add(Change(
                     widget.command.pathName,
@@ -75,6 +70,11 @@ class _PathCommandWidgetState extends State<PathCommandWidget> {
                   ));
                 } else if (widget.command.pathName != null) {
                   _controller.text = widget.command.pathName!;
+                }
+
+                FocusScopeNode currentScope = FocusScope.of(context);
+                if (!currentScope.hasPrimaryFocus && currentScope.hasFocus) {
+                  FocusManager.instance.primaryFocus!.unfocus();
                 }
               },
             );

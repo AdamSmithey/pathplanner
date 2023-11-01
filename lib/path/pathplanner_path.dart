@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:math';
+import 'dart:io' as io;
 
 import 'package:file/file.dart';
 import 'package:flutter/foundation.dart';
@@ -15,6 +17,8 @@ import 'package:pathplanner/path/path_point.dart';
 import 'package:pathplanner/path/rotation_target.dart';
 import 'package:pathplanner/path/waypoint.dart';
 import 'package:pathplanner/services/log.dart';
+import 'package:pathplanner/services/simulator/chassis_speeds.dart';
+import 'package:pathplanner/services/simulator/trajectory_generator.dart';
 import 'package:pathplanner/util/geometry_util.dart';
 
 const double pathResolution = 0.025;
@@ -29,6 +33,7 @@ class PathPlannerPath {
   List<RotationTarget> rotationTargets;
   List<EventMarker> eventMarkers;
   bool reversed;
+  bool show;
   String? folder;
 
   FileSystem fs;
@@ -41,11 +46,16 @@ class PathPlannerPath {
   bool rotationTargetsExpanded = false;
   bool eventMarkersExpanded = false;
   bool constraintZonesExpanded = false;
+  bool inverted = false;
   DateTime lastModified = DateTime.now().toUtc();
+
+  late PathPlannerPath pathRed;
+  late PathPlannerPath pathBlue;
 
   PathPlannerPath.defaultPath({
     required this.pathDir,
     required this.fs,
+    required this.show, 
     this.name = 'New Path',
     this.folder,
   })  : waypoints = [],
@@ -87,6 +97,7 @@ class PathPlannerPath {
     required this.fs,
     required this.reversed,
     required this.folder,
+    required this.show,
   }) : pathPoints = [] {
     generatePathPoints();
   }
@@ -118,20 +129,63 @@ class PathPlannerPath {
           ],
           reversed: json['reversed'] ?? false,
           folder: json['folder'],
+          show: json['display'],
         );
 
-  void generateAndSavePath() {
+  void generateAndSavePath(bool? parent) {
+    bool? b = inverted && parent!;
+    if(b) invert();
+
+    if(parent!) {
+      pathRed = duplicate('$name Red', 'team');
+      pathRed?.invert();
+      pathRed?.generateAndSavePath(false);
+
+      pathBlue = duplicate('$name Blue', 'team');
+      pathBlue?.generateAndSavePath(false);
+    }
+
     Stopwatch s = Stopwatch()..start();
 
     generatePathPoints();
+    generateAndSaveTrajectory();
 
     try {
       File pathFile = fs.file(join(pathDir, '$name.path'));
       const JsonEncoder encoder = JsonEncoder.withIndent('  ');
       pathFile.writeAsString(encoder.convert(this));
       lastModified = DateTime.now().toUtc();
-      Log.debug(
-          'Saved and generated "$name.path" in ${s.elapsedMilliseconds}ms');
+      if(parent) {
+        Log.debug(
+            'Saved and generated "$name" in ${s.elapsedMilliseconds}ms');
+      }
+
+    } catch (ex, stack) {
+      Log.error('Failed to save path', ex, stack);
+    }
+
+    if(b) invert();
+    generatePathPoints();
+
+  }
+
+  void generateAndSaveTrajectory() {
+    Stopwatch s = Stopwatch()..start();
+
+    Trajectory trajectory = Trajectory.simulate(this, ChassisSpeeds());
+
+    List<dynamic> list = List.empty(growable: true);
+    for(TrajectoryState state in trajectory.states) {
+      list.add(state.toJson());
+    }
+
+    try {
+      File pathFile = fs.file(join('$pathDir/trajectories', '$name.json'));
+      pathFile.createSync(recursive: true);
+
+      const JsonEncoder encoder = JsonEncoder.withIndent('  ');
+      pathFile.writeAsString(encoder.convert(list));
+      lastModified = DateTime.now().toUtc();
     } catch (ex, stack) {
       Log.error('Failed to save path', ex, stack);
     }
@@ -204,6 +258,7 @@ class PathPlannerPath {
       'goalEndState': goalEndState.toJson(),
       'reversed': reversed,
       'folder': folder,
+      'display': show,
     };
   }
 
@@ -216,6 +271,19 @@ class PathPlannerPath {
         anchor: anchorPos,
       ),
     );
+  }
+
+  void invert() {
+    inverted = !inverted;
+    for(Waypoint w in waypoints) {
+      w.invert();
+    }
+
+    for(PathPoint p in pathPoints) {
+      p.invert();
+    }
+
+    generatePathPoints();
   }
 
   void insertWaypointAfter(int waypointIdx) {
@@ -434,7 +502,7 @@ class PathPlannerPath {
     return sign * (ab * bc * ac) / (4 * area);
   }
 
-  PathPlannerPath duplicate(String newName) {
+  PathPlannerPath duplicate(String newName, String f) {
     return PathPlannerPath(
       name: newName,
       waypoints: cloneWaypoints(waypoints),
@@ -443,10 +511,11 @@ class PathPlannerPath {
       constraintZones: cloneConstraintZones(constraintZones),
       rotationTargets: cloneRotationTargets(rotationTargets),
       eventMarkers: cloneEventMarkers(eventMarkers),
-      pathDir: pathDir,
+      pathDir: '$pathDir/${f == 'null' ? '' : f}',
       fs: fs,
       reversed: reversed,
-      folder: folder,
+      folder: f,
+      show: show,
     );
   }
 

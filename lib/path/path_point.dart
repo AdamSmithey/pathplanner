@@ -3,10 +3,10 @@ import 'dart:math';
 import 'package:pathplanner/path/path_constraints.dart';
 
 class PathPoint {
-  final Point position;
-  final num? holonomicRotation;
-  final PathConstraints constraints;
-  final num distanceAlongPath;
+  Point position;
+  num? holonomicRotation;
+  PathConstraints constraints;
+  num distanceAlongPath;
   num maxV = double.infinity;
 
   PathPoint({
@@ -15,4 +15,9 @@ class PathPoint {
     required this.constraints,
     required this.distanceAlongPath,
   });
+
+  void invert() {
+    position = Point(-position.x, position.y);
+    if(holonomicRotation != null) holonomicRotation = 180 - holonomicRotation!;
+  }
 }

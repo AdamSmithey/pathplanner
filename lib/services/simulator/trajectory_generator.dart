@@ -123,6 +123,7 @@ class TrajectoryGenerator {
         fs: MemoryFileSystem(),
         reversed: path.reversed,
         folder: null,
+        show: path.show,
       );
     } else if ((closestPointIdx == 0 && robotNextControl == null) ||
         ((closestDist -
@@ -182,6 +183,7 @@ class TrajectoryGenerator {
         fs: MemoryFileSystem(),
         reversed: path.reversed,
         folder: null,
+        show: path.show,
       );
     }
 
@@ -230,6 +232,7 @@ class TrajectoryGenerator {
         fs: MemoryFileSystem(),
         reversed: path.reversed,
         folder: null,
+        show: path.show,
       );
     }
 
@@ -356,6 +359,7 @@ class TrajectoryGenerator {
       fs: MemoryFileSystem(),
       reversed: path.reversed,
       folder: null,
+      show: path.show,
     );
   }
 
@@ -586,5 +590,22 @@ class TrajectoryState {
     }
 
     return lerpedState;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'time': time,
+      'pose': {
+        'rotation': {
+          'raidans': headingRadians,
+        },
+        'translation': {
+            'x': position.x,
+            'y': position.y,
+        },
+      },
+      'velocity': velocity,
+      'holonomicRotation': holonomicRotationRadians,
+    };
   }
 }

@@ -124,7 +124,17 @@ class PathPlannerAuto {
     }
   }
 
-  void saveFile() {
+  void saveFile(bool parent) {
+    if(parent) {
+      PathPlannerAuto red = duplicate('$name Red');
+      red.setTeam('Red');
+      red.saveFile(false);
+
+      PathPlannerAuto blue = duplicate('$name Blue');
+      blue.setTeam('Blue');
+      blue.saveFile(false);
+    }
+
     try {
       File autoFile = fs.file(join(autoDir, '$name.auto'));
       const JsonEncoder encoder = JsonEncoder.withIndent('  ');
@@ -134,11 +144,30 @@ class PathPlannerAuto {
     } catch (ex, stack) {
       Log.error('Failed to save auto', ex, stack);
     }
+
+    resetTeam();
+  }
+
+  void setTeam(String team) {
+    for (Command cmd in sequence.commands) {
+      if (cmd is PathCommand && (cmd.pathName != null && !cmd.pathName!.contains(' $team'))) {
+        _updatePathNameInCommands(sequence.commands, cmd.pathName!, '${cmd.pathName} $team');
+      }
+    }
+  }
+
+  void resetTeam() {
+    for (Command cmd in sequence.commands) {
+      if (cmd is PathCommand && cmd.pathName != null) {
+        _updatePathNameInCommands(sequence.commands, cmd.pathName!, cmd.pathName!.replaceAll(' Red', '').replaceAll(' Blue', ''));
+      }
+    }
   }
 
   void updatePathName(String oldPathName, String newPathName) {
     _updatePathNameInCommands(sequence.commands, oldPathName, newPathName);
-    saveFile();
+    //saveFile(!newPathName.contains(' Blue') && !newPathName.contains(' Red'));
+    saveFile(true);
   }
 
   void _updatePathNameInCommands(

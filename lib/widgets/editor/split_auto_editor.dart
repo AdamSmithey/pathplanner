@@ -216,6 +216,7 @@ class _SplitAutoEditorState extends State<SplitAutoEditor>
                           animation: _previewController.view,
                           previewColor: colorScheme.primary,
                           prefs: widget.prefs,
+                          treeOnRight: _treeOnRight
                         ),
                       ),
                     ),
@@ -273,7 +274,7 @@ class _SplitAutoEditorState extends State<SplitAutoEditor>
                     onAutoChanged: () {
                       widget.onAutoChanged?.call();
                       // Delay this because it needs the parent widget to rebuild first
-                      Future.delayed(const Duration(milliseconds: 100))
+                      Future.delayed(const Duration(milliseconds: 50))
                           .then((_) {
                         _simulateAuto();
                       });
@@ -282,6 +283,8 @@ class _SplitAutoEditorState extends State<SplitAutoEditor>
                       _treeOnRight = !_treeOnRight;
                       widget.prefs.setBool(PrefsKeys.treeOnRight, _treeOnRight);
                       _controller.areas = _controller.areas.reversed.toList();
+                      
+                      _simulateAuto();
                     }),
                     undoStack: widget.undoStack,
                   ),
@@ -298,6 +301,12 @@ class _SplitAutoEditorState extends State<SplitAutoEditor>
   // Marked as async so it can run from initState
   void _simulateAuto() async {
     Trajectory? simPath;
+
+    for(PathPlannerPath p in widget.autoPaths) {
+      if((!_treeOnRight && !p.inverted) || (_treeOnRight && p.inverted)) {
+        p.invert();
+      }
+    }
 
     try {
       simPath = TrajectoryGenerator.simulateAuto(

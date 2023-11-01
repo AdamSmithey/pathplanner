@@ -26,6 +26,7 @@ class SplitPathEditor extends StatefulWidget {
   final FieldImage fieldImage;
   final ChangeStack undoStack;
   final PPLibTelemetry? telemetry;
+  final ValueChanged<String> onRename;
   final bool hotReload;
   final bool simulate;
 
@@ -34,6 +35,7 @@ class SplitPathEditor extends StatefulWidget {
     required this.path,
     required this.fieldImage,
     required this.undoStack,
+    required this.onRename, 
     this.telemetry,
     this.hotReload = false,
     this.simulate = false,
@@ -67,6 +69,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
 
   late Size _robotSize;
   late AnimationController _previewController;
+  bool _minimized = false;
 
   List<Waypoint> get waypoints => widget.path.waypoints;
 
@@ -93,11 +96,11 @@ class _SplitPathEditorState extends State<SplitPathEditor>
     _controller.areas = [
       Area(
         weight: _treeOnRight ? (1.0 - treeWeight) : treeWeight,
-        minimalWeight: 0.3,
+        minimalSize: 400
       ),
       Area(
         weight: _treeOnRight ? treeWeight : (1.0 - treeWeight),
-        minimalWeight: 0.3,
+        minimalSize: 400,
       ),
     ];
 
@@ -155,7 +158,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                       widget.path.addWaypoint(Point(
                           _xPixelsToMeters(details.localPosition.dx),
                           _yPixelsToMeters(details.localPosition.dy)));
-                      widget.path.generateAndSavePath();
+                      widget.path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                     });
                     _simulatePath();
                   },
@@ -164,7 +167,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                       widget.path.waypoints =
                           PathPlannerPath.cloneWaypoints(oldValue);
                       _setSelectedWaypoint(null);
-                      widget.path.generateAndSavePath();
+                      widget.path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                       _simulatePath();
                     });
                   },
@@ -318,7 +321,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                         if (waypoints[index] != _draggedPoint) {
                           waypoints[index] = dragEnd.clone();
                         }
-                        widget.path.generateAndSavePath();
+                        widget.path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                         _simulatePath();
                       });
                       if (widget.hotReload) {
@@ -328,7 +331,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                     (oldValue) {
                       setState(() {
                         waypoints[index] = oldValue!.clone();
-                        widget.path.generateAndSavePath();
+                        widget.path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                         _simulatePath();
                       });
                       if (widget.hotReload) {
@@ -345,14 +348,14 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                       () {
                         setState(() {
                           widget.path.goalEndState.rotation = endRotation;
-                          widget.path.generateAndSavePath();
+                          widget.path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                           _simulatePath();
                         });
                       },
                       (oldValue) {
                         setState(() {
                           widget.path.goalEndState.rotation = oldValue!;
-                          widget.path.generateAndSavePath();
+                          widget.path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                           _simulatePath();
                         });
                       },
@@ -367,7 +370,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                         setState(() {
                           widget.path.rotationTargets[rotationIdx]
                               .rotationDegrees = endRotation;
-                          widget.path.generateAndSavePath();
+                          widget.path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                           _simulatePath();
                         });
                       },
@@ -375,7 +378,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                         setState(() {
                           widget.path.rotationTargets[rotationIdx]
                               .rotationDegrees = oldValue!;
-                          widget.path.generateAndSavePath();
+                          widget.path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                           _simulatePath();
                         });
                       },
@@ -407,6 +410,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                           animation: _previewController.view,
                           previewColor: colorScheme.primary,
                           prefs: widget.prefs,
+                          treeOnRight: _treeOnRight
                         ),
                       ),
                     ),
@@ -424,6 +428,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
             ),
           ),
           child: MultiSplitView(
+            resizable: _minimized,
             axis: Axis.horizontal,
             controller: _controller,
             onWeightChange: () {
@@ -436,20 +441,22 @@ class _SplitPathEditorState extends State<SplitPathEditor>
             children: [
               if (_treeOnRight) Container(),
               Card(
-                margin: const EdgeInsets.all(0),
+                margin: !_minimized ? 
+                  const EdgeInsets.only(bottom: 576) : 
+                  const EdgeInsets.all(0),
                 elevation: 4.0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    topLeft:
-                        _treeOnRight ? const Radius.circular(12) : Radius.zero,
-                    topRight:
-                        _treeOnRight ? Radius.zero : const Radius.circular(12),
-                    bottomLeft:
-                        _treeOnRight ? const Radius.circular(12) : Radius.zero,
-                    bottomRight:
-                        _treeOnRight ? Radius.zero : const Radius.circular(12),
-                  ),
-                ),
+                // shape: RoundedRectangleBorder(
+                //   borderRadius: BorderRadius.only(
+                //     topLeft:
+                //         _treeOnRight ? const Radius.circular(12) : Radius.zero,
+                //     topRight:
+                //         _treeOnRight ? Radius.zero : const Radius.circular(12),
+                //     bottomLeft:
+                //         _treeOnRight ? const Radius.circular(12) : Radius.zero,
+                //     bottomRight:
+                //         _treeOnRight ? Radius.zero : const Radius.circular(12),
+                //   ),
+                // ),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: PathTree(
@@ -462,9 +469,13 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                     waypointsTreeController: _waypointsTreeController,
                     undoStack: widget.undoStack,
                     holonomicMode: _holonomicMode,
+                    test: _minimized,
+                    onMinimized: () => setState(() {
+                      _minimized = !_minimized;
+                    }),                    
                     onPathChanged: () {
                       setState(() {
-                        widget.path.generateAndSavePath();
+                        widget.path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));
                         _simulatePath();
                       });
 
@@ -474,7 +485,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                     },
                     onPathChangedNoSim: () {
                       setState(() {
-                        widget.path.generateAndSavePath();
+                        widget.path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));
                       });
 
                       if (widget.hotReload) {
@@ -531,7 +542,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                                       t.waypointRelativePos, waypointIdx);
                             }
 
-                            widget.path.generateAndSavePath();
+                            widget.path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                             _simulatePath();
                           });
                         },
@@ -553,7 +564,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                             widget.path.rotationTargets =
                                 PathPlannerPath.cloneRotationTargets(
                                     oldValue[3] as List<RotationTarget>);
-                            widget.path.generateAndSavePath();
+                            widget.path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                             _simulatePath();
                           });
                         },
@@ -563,6 +574,9 @@ class _SplitPathEditorState extends State<SplitPathEditor>
                       _treeOnRight = !_treeOnRight;
                       widget.prefs.setBool(PrefsKeys.treeOnRight, _treeOnRight);
                       _controller.areas = _controller.areas.reversed.toList();
+                      setState(() {
+                        _simulatePath();
+                      }); 
                     }),
                     onWaypointHovered: (value) {
                       setState(() {
@@ -619,6 +633,9 @@ class _SplitPathEditorState extends State<SplitPathEditor>
   void _simulatePath() async {
     if (widget.simulate) {
       setState(() {
+        if((!_treeOnRight && !widget.path.inverted) || (_treeOnRight && widget.path.inverted)) {
+          widget.path.invert();
+        }
         _simTraj = Trajectory.simulate(widget.path, ChassisSpeeds());
       });
       _previewController.stop();

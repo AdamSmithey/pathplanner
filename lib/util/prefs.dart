@@ -20,6 +20,7 @@ class PrefsKeys {
   static const String autoFolders = 'autoFolders';
   static const String snapToGuidelines = 'snapToGuidelines';
   static const String hidePathsOnHover = 'hidePathsOnHover';
+  static const String saveBothPaths = 'saveBothPaths';
 }
 
 class Defaults {
@@ -42,4 +43,5 @@ class Defaults {
       []; // Can't be const or user wont be able to add new folders
   static const bool snapToGuidelines = true;
   static const bool hidePathsOnHover = true;
+  static const bool saveBothPaths = false;
 }

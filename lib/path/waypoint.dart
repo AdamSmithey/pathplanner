@@ -189,6 +189,12 @@ class Waypoint {
     }
   }
 
+  void invert() {
+    anchor = Point(16.52-anchor.x, anchor.y);
+    if(nextControl?.x != null) nextControl = Point(16.52-nextControl!.x, nextControl!.y);
+    if(prevControl?.x != null) prevControl = Point(16.52-prevControl!.x, prevControl!.y);
+  }
+
   bool isPointInAnchor(num xPos, num yPos, num radius) {
     return pow(xPos - anchor.x, 2) + pow(yPos - anchor.y, 2) < pow(radius, 2);
   }

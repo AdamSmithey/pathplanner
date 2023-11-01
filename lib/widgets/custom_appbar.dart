@@ -13,12 +13,8 @@ class CustomAppBar extends AppBar {
     super.key,
     super.leading,
     super.automaticallyImplyLeading,
+    super.actions,
   }) : super(
-          actions: [
-            if (!Platform.isMacOS) MinimizeWindowButton(),
-            if (!Platform.isMacOS) MaximizeWindowButton(),
-            if (!Platform.isMacOS) CloseWindowButton(),
-          ],
           title: SizedBox(
             height: 48,
             child: Row(

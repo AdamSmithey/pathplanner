@@ -29,6 +29,7 @@ class PathPainter extends CustomPainter {
   final Trajectory? simulatedPath;
   final Color? previewColor;
   final SharedPreferences prefs;
+  final bool treeOnRight;
 
   late Size robotSize;
   late num robotRadius;
@@ -53,6 +54,7 @@ class PathPainter extends CustomPainter {
     this.selectedMarker,
     this.startingPose,
     this.simulatedPath,
+    required this.treeOnRight,
     Animation<double>? animation,
     this.previewColor,
     required this.prefs,
@@ -80,6 +82,10 @@ class PathPainter extends CustomPainter {
     scale = size.width / fieldImage.defaultSize.width;
 
     for (int i = 0; i < paths.length; i++) {
+      if((!treeOnRight && !paths[i].inverted) || (treeOnRight && paths[i].inverted)) {
+          paths[i].invert();
+      }
+      
       if (hideOtherPathsOnHover &&
           hoveredPath != null &&
           hoveredPath != paths[i].name) {

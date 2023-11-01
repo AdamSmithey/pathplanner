@@ -5,10 +5,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class EditorSettingsTree extends StatefulWidget {
   final bool initiallyExpanded;
+  final VoidCallback? onPathChanged;
 
   const EditorSettingsTree({
     super.key,
     this.initiallyExpanded = false,
+    required this.onPathChanged,
   });
 
   @override
@@ -19,6 +21,7 @@ class _EditorSettingsTreeState extends State<EditorSettingsTree> {
   late SharedPreferences _prefs;
   bool _snapToGuidelines = Defaults.snapToGuidelines;
   bool _hidePathsOnHover = Defaults.hidePathsOnHover;
+  bool _saveBothPaths = Defaults.saveBothPaths;
 
   @override
   void initState() {
@@ -31,6 +34,8 @@ class _EditorSettingsTreeState extends State<EditorSettingsTree> {
             Defaults.snapToGuidelines;
         _hidePathsOnHover = _prefs.getBool(PrefsKeys.hidePathsOnHover) ??
             Defaults.hidePathsOnHover;
+        _saveBothPaths = _prefs.getBool(PrefsKeys.saveBothPaths) ?? 
+            Defaults.saveBothPaths;
       });
     });
   }
@@ -86,6 +91,33 @@ class _EditorSettingsTreeState extends State<EditorSettingsTree> {
               ),
               child: Text(
                 'Hide Other Paths on Hover',
+                style: TextStyle(fontSize: 15),
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Checkbox(
+              value: _saveBothPaths,
+              onChanged: (val) {
+                if (val != null) {
+                  widget.onPathChanged?.call();
+                  
+                  setState(() {
+                    _saveBothPaths = val;
+                    _prefs.setBool(PrefsKeys.saveBothPaths, val);
+                  });
+                }
+              },
+            ),
+            const Padding(
+              padding: EdgeInsets.only(
+                bottom: 3.0,
+                left: 4.0,
+              ),
+              child: Text(
+                'test',
                 style: TextStyle(fontSize: 15),
               ),
             ),

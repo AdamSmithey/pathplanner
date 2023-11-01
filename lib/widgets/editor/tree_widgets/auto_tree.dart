@@ -79,7 +79,9 @@ class _AutoTreeState extends State<AutoTree> {
                   ),
                 ),
                 const Divider(),
-                const EditorSettingsTree(),
+                EditorSettingsTree(
+                  onPathChanged: widget.onAutoChanged,
+                ),
               ],
             ),
           ),

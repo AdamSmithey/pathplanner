@@ -148,6 +148,7 @@ class _ProjectPageState extends State<ProjectPage> {
           pathDir: _pathsDirectory.path,
           name: 'Example Path',
           fs: fs,
+          show: true,
         ));
       }
 
@@ -218,13 +219,13 @@ class _ProjectPageState extends State<ProjectPage> {
                           _replaceNamedCommand(
                               oldName, newName, m.command.commands);
                         }
-                        path.generateAndSavePath();
+                        path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                       }
 
                       for (PathPlannerAuto auto in _autos) {
                         _replaceNamedCommand(
                             oldName, newName, auto.sequence.commands);
-                        auto.saveFile();
+                        auto.saveFile(true);
                       }
                     });
                   },
@@ -234,13 +235,13 @@ class _ProjectPageState extends State<ProjectPage> {
                         for (EventMarker m in path.eventMarkers) {
                           _replaceNamedCommand(name, null, m.command.commands);
                         }
-                        path.generateAndSavePath();
+                        path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                       }
 
                       for (PathPlannerAuto auto in _autos) {
                         _replaceNamedCommand(
                             name, null, auto.sequence.commands);
-                        auto.saveFile();
+                        auto.saveFile(true);
                       }
                     });
                   },
@@ -376,24 +377,7 @@ class _ProjectPageState extends State<ProjectPage> {
                     waitDuration: const Duration(seconds: 1),
                     child: IconButton.filled(
                       onPressed: () {
-                        List<String> pathNames = [];
-                        for (PathPlannerPath path in _paths) {
-                          pathNames.add(path.name);
-                        }
-                        String pathName = 'New Path';
-                        while (pathNames.contains(pathName)) {
-                          pathName = 'New $pathName';
-                        }
-
-                        setState(() {
-                          _paths.add(PathPlannerPath.defaultPath(
-                            pathDir: _pathsDirectory.path,
-                            name: pathName,
-                            fs: fs,
-                            folder: _pathFolder,
-                          ));
-                          _sortPaths(_pathSortValue);
-                        });
+                        _addNewPath('New Path', true);
                       },
                       icon: const Icon(Icons.add),
                     ),
@@ -429,7 +413,7 @@ class _ProjectPageState extends State<ProjectPage> {
                       onAccept: (data) {
                         setState(() {
                           data.folder = null;
-                          data.generateAndSavePath();
+                          data.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                         });
                       },
                       builder: (context, candidates, rejects) {
@@ -492,7 +476,7 @@ class _ProjectPageState extends State<ProjectPage> {
                         onAccept: (data) {
                           setState(() {
                             data.folder = _pathFolders[i];
-                            data.generateAndSavePath();
+                            data.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));
                           });
                         },
                         builder: (context, candidates, rejects) {
@@ -565,7 +549,7 @@ class _ProjectPageState extends State<ProjectPage> {
                                                     if (path.folder ==
                                                         _pathFolders[i]) {
                                                       path.folder = newName;
-                                                      path.generateAndSavePath();
+                                                      path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
                                                     }
                                                   }
                                                   _pathFolders[i] = newName;
@@ -598,7 +582,7 @@ class _ProjectPageState extends State<ProjectPage> {
                   childAspectRatio: _pathsCompact ? 2.5 : 1.55,
                   children: [
                     for (int i = 0; i < _paths.length; i++)
-                      if (_paths[i].folder == _pathFolder)
+                      if (_paths[i].folder == _pathFolder && _paths[i].show)
                         _buildPathCard(i, context),
                   ],
                 ),
@@ -611,6 +595,7 @@ class _ProjectPageState extends State<ProjectPage> {
   }
 
   Widget _buildPathCard(int i, BuildContext context) {
+    print(_paths.length);
     final pathCard = ProjectItemCard(
       name: _paths[i].name,
       compact: _pathsCompact,
@@ -630,7 +615,7 @@ class _ProjectPageState extends State<ProjectPage> {
         }
 
         setState(() {
-          _paths.add(_paths[i].duplicate(pathName));
+          _paths.add(_paths[i].duplicate(pathName, _pathFolders[i]));
           _sortPaths(_pathSortValue);
         });
       },
@@ -684,6 +669,38 @@ class _ProjectPageState extends State<ProjectPage> {
         childWhenDragging: Container(),
         child: pathCard,
       );
+    });
+  }
+
+  void _addNewPath(String name, bool? show) {
+    List<String> pathNames = [];
+    for (PathPlannerPath path in _paths) {
+      pathNames.add(path.name);
+    }
+
+    if(pathNames.contains(name)) {
+      if(name == 'New Path') {
+        int i = 1;
+        String newName = name;
+        while(pathNames.contains(newName)) {
+          newName = '$name ${++i}';
+        }
+        name = newName;
+      } else {
+        // No need to create a new element if it already exists...
+        return;
+      }
+    }
+
+    setState(() {
+      _paths.add(PathPlannerPath.defaultPath(
+        pathDir: _pathsDirectory.path,
+        name: name,
+        fs: fs,
+        folder: _pathFolder,
+        show: show!,
+      ));
+      _sortPaths(_pathSortValue);
     });
   }
 
@@ -886,7 +903,7 @@ class _ProjectPageState extends State<ProjectPage> {
                       onAccept: (data) {
                         setState(() {
                           data.folder = null;
-                          data.saveFile();
+                          data.saveFile(true);
                         });
                       },
                       builder: (context, candidates, rejects) {
@@ -949,7 +966,7 @@ class _ProjectPageState extends State<ProjectPage> {
                         onAccept: (data) {
                           setState(() {
                             data.folder = _autoFolders[i];
-                            data.saveFile();
+                            data.saveFile(true);
                           });
                         },
                         builder: (context, candidates, rejects) {
@@ -1022,7 +1039,7 @@ class _ProjectPageState extends State<ProjectPage> {
                                                     if (auto.folder ==
                                                         _autoFolders[i]) {
                                                       auto.folder = newName;
-                                                      auto.saveFile();
+                                                      auto.saveFile(true);
                                                     }
                                                   }
                                                   _autoFolders[i] = newName;

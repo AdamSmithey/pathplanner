@@ -47,6 +47,11 @@ class _AutoEditorPageState extends State<AutoEditorPage> {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     List<String> autoPathNames = widget.auto.getAllPathNames();
+    print('path ${autoPathNames.length}');
+    for(int i = 0; i < autoPathNames.length; i++) {
+      print('${autoPathNames[i]}  ${widget.allPaths[i].name}');
+    }
+    //List<PathPlannerPath> autoPaths = List.empty();
     List<PathPlannerPath> autoPaths = autoPathNames
         .map((name) => widget.allPaths.firstWhere((path) => path.name == name))
         .toList();
@@ -60,7 +65,7 @@ class _AutoEditorPageState extends State<AutoEditorPage> {
       undoStack: widget.undoStack,
       onAutoChanged: () {
         setState(() {
-          widget.auto.saveFile();
+          widget.auto.saveFile(true);
         });
 
         if (widget.hotReload) {

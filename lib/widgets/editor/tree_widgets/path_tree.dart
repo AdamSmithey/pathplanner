@@ -23,6 +23,7 @@ class PathTree extends StatefulWidget {
   final VoidCallback? onSideSwapped;
   final VoidCallback? onPathChanged;
   final VoidCallback? onPathChangedNoSim;
+  final VoidCallback onMinimized;
   final WaypointsTreeController? waypointsTreeController;
   final int? initiallySelectedWaypoint;
   final int? initiallySelectedZone;
@@ -31,6 +32,7 @@ class PathTree extends StatefulWidget {
   final ChangeStack undoStack;
   final num? pathRuntime;
   final bool holonomicMode;
+  final bool test;
 
   const PathTree({
     super.key,
@@ -50,11 +52,13 @@ class PathTree extends StatefulWidget {
     this.initiallySelectedRotTarget,
     this.onMarkerHovered,
     this.onMarkerSelected,
+    required this.onMinimized,
     this.initiallySelectedMarker,
     required this.undoStack,
     this.pathRuntime,
     this.onPathChangedNoSim,
     required this.holonomicMode,
+    this.test = false
   });
 
   @override
@@ -62,6 +66,8 @@ class PathTree extends StatefulWidget {
 }
 
 class _PathTreeState extends State<PathTree> {
+  bool minimized = false;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -81,6 +87,18 @@ class _PathTreeState extends State<PathTree> {
                 child: IconButton(
                   onPressed: widget.onSideSwapped,
                   icon: const Icon(Icons.swap_horiz),
+                ),
+              ),
+              Tooltip(
+                message: !widget.test ? 'Maximize' : 'Minimize',
+                waitDuration: const Duration(seconds: 1),
+                child: IconButton(
+                  onPressed: (() {
+                    print(widget.test);
+                    widget.onMinimized.call();
+                    // = !minimized;
+                  }),
+                  icon: !widget.test ? const Icon(Icons.maximize) : const Icon(Icons.minimize),
                 ),
               ),
             ],
@@ -148,11 +166,13 @@ class _PathTreeState extends State<PathTree> {
                 ),
                 _buildReversedCheckbox(),
                 const Divider(),
-                const EditorSettingsTree(),
+                EditorSettingsTree(
+                  onPathChanged: widget.onPathChanged,
+                ),
               ],
             ),
           ),
-        ),
+        )
       ],
     );
   }
