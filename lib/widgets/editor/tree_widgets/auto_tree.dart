@@ -11,8 +11,10 @@ class AutoTree extends StatefulWidget {
   final ValueChanged<String?>? onPathHovered;
   final VoidCallback? onSideSwapped;
   final VoidCallback? onAutoChanged;
+  final VoidCallback? onMinimized;
   final ChangeStack undoStack;
   final num? autoRuntime;
+  final bool minimized;
 
   const AutoTree({
     super.key,
@@ -21,8 +23,10 @@ class AutoTree extends StatefulWidget {
     this.onPathHovered,
     this.onSideSwapped,
     this.onAutoChanged,
+    this.onMinimized,
     required this.undoStack,
     this.autoRuntime,
+    required this.minimized,
   });
 
   @override
@@ -49,6 +53,16 @@ class _AutoTreeState extends State<AutoTree> {
                 child: IconButton(
                   onPressed: widget.onSideSwapped,
                   icon: const Icon(Icons.swap_horiz),
+                ),
+              ),
+              Tooltip(
+                message: widget.minimized ? 'Maximize' : 'Minimize',
+                waitDuration: const Duration(seconds: 1),
+                child: IconButton(
+                  onPressed: (() {
+                    widget.onMinimized?.call();
+                  }),
+                  icon: widget.minimized ? const Icon(Icons.maximize) : const Icon(Icons.minimize),
                 ),
               ),
             ],

@@ -49,6 +49,8 @@ class _SplitAutoEditorState extends State<SplitAutoEditor>
   Pose2d? _dragOldValue;
   Trajectory? _simPath;
 
+  bool _minimized = false;
+
   late Size _robotSize;
   late AnimationController _previewController;
 
@@ -236,6 +238,7 @@ class _SplitAutoEditorState extends State<SplitAutoEditor>
           child: MultiSplitView(
             axis: Axis.horizontal,
             controller: _controller,
+            resizable: !_minimized,
             onWeightChange: () {
               double? newWeight = _treeOnRight
                   ? _controller.areas[1].weight
@@ -246,7 +249,9 @@ class _SplitAutoEditorState extends State<SplitAutoEditor>
             children: [
               if (_treeOnRight) Container(),
               Card(
-                margin: const EdgeInsets.all(0),
+                margin: _minimized ? 
+                  const EdgeInsets.only(bottom: 576) : 
+                  const EdgeInsets.all(0),
                 elevation: 4.0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(
@@ -271,6 +276,9 @@ class _SplitAutoEditorState extends State<SplitAutoEditor>
                         _hoveredPath = value;
                       });
                     },
+                    onMinimized: () => setState(() {
+                      _minimized = !_minimized;
+                    }),
                     onAutoChanged: () {
                       widget.onAutoChanged?.call();
                       // Delay this because it needs the parent widget to rebuild first
@@ -287,6 +295,7 @@ class _SplitAutoEditorState extends State<SplitAutoEditor>
                       _simulateAuto();
                     }),
                     undoStack: widget.undoStack,
+                    minimized: _minimized,
                   ),
                 ),
               ),
