@@ -428,7 +428,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
             ),
           ),
           child: MultiSplitView(
-            resizable: _minimized,
+            resizable: !_minimized,
             axis: Axis.horizontal,
             controller: _controller,
             onWeightChange: () {
@@ -441,7 +441,7 @@ class _SplitPathEditorState extends State<SplitPathEditor>
             children: [
               if (_treeOnRight) Container(),
               Card(
-                margin: !_minimized ? 
+                margin: _minimized ? 
                   const EdgeInsets.only(bottom: 576) : 
                   const EdgeInsets.all(0),
                 elevation: 4.0,

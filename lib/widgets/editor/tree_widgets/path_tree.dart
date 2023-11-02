@@ -90,15 +90,13 @@ class _PathTreeState extends State<PathTree> {
                 ),
               ),
               Tooltip(
-                message: !widget.test ? 'Maximize' : 'Minimize',
+                message: widget.test ? 'Maximize' : 'Minimize',
                 waitDuration: const Duration(seconds: 1),
                 child: IconButton(
                   onPressed: (() {
-                    print(widget.test);
                     widget.onMinimized.call();
-                    // = !minimized;
                   }),
-                  icon: !widget.test ? const Icon(Icons.maximize) : const Icon(Icons.minimize),
+                  icon: widget.test ? const Icon(Icons.maximize) : const Icon(Icons.minimize),
                 ),
               ),
             ],
