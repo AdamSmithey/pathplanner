@@ -42,14 +42,14 @@ class PathPlannerAuto {
   })  : sequence = SequentialCommandGroup(commands: []),
         startingPose = Pose2d(position: const Point(2, 2));
 
-  PathPlannerAuto duplicate(String newName) {
+  PathPlannerAuto duplicate(String newName, String f) {
     return PathPlannerAuto(
       name: newName,
       sequence: sequence.clone() as SequentialCommandGroup,
-      autoDir: autoDir,
+      autoDir: '$autoDir/${f == 'null' ? '' : f}',
       fs: fs,
       startingPose: startingPose,
-      folder: folder,
+      folder: f,
     );
   }
 
@@ -126,17 +126,19 @@ class PathPlannerAuto {
 
   void saveFile(bool parent) {
     if(parent) {
-      PathPlannerAuto red = duplicate('$name Red');
+      PathPlannerAuto red = duplicate('$name Red', 'team');
       red.setTeam('Red');
       red.saveFile(false);
 
-      PathPlannerAuto blue = duplicate('$name Blue');
+      PathPlannerAuto blue = duplicate('$name Blue', 'team');
       blue.setTeam('Blue');
       blue.saveFile(false);
     }
 
     try {
       File autoFile = fs.file(join(autoDir, '$name.auto'));
+      autoFile.createSync(recursive: true);
+      
       const JsonEncoder encoder = JsonEncoder.withIndent('  ');
       autoFile.writeAsString(encoder.convert(this));
       lastModified = DateTime.now().toUtc();

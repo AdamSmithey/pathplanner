@@ -1111,7 +1111,7 @@ class _ProjectPageState extends State<ProjectPage> {
         }
 
         setState(() {
-          _autos.add(_autos[i].duplicate(autoName));
+          _autos.add(_autos[i].duplicate(autoName, 'null'));
           _sortAutos(_autoSortValue);
         });
       },
