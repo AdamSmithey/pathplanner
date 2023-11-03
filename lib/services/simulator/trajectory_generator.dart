@@ -123,7 +123,6 @@ class TrajectoryGenerator {
         fs: MemoryFileSystem(),
         reversed: path.reversed,
         folder: null,
-        show: path.show,
       );
     } else if ((closestPointIdx == 0 && robotNextControl == null) ||
         ((closestDist -

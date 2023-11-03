@@ -32,7 +32,6 @@ class PathPlannerPath {
   List<RotationTarget> rotationTargets;
   List<EventMarker> eventMarkers;
   bool reversed;
-  bool show;
   String? folder;
 
   FileSystem fs;
@@ -54,7 +53,6 @@ class PathPlannerPath {
   PathPlannerPath.defaultPath({
     required this.pathDir,
     required this.fs,
-    required this.show, 
     this.name = 'New Path',
     this.folder,
   })  : waypoints = [],
@@ -96,7 +94,6 @@ class PathPlannerPath {
     required this.fs,
     required this.reversed,
     required this.folder,
-    required this.show,
   }) : pathPoints = [] {
     generatePathPoints();
   }
@@ -128,7 +125,6 @@ class PathPlannerPath {
           ],
           reversed: json['reversed'] ?? false,
           folder: json['folder'],
-          show: json['display'],
         );
 
   void generateAndSavePath(bool? parent) {
@@ -272,7 +268,6 @@ class PathPlannerPath {
       'goalEndState': goalEndState.toJson(),
       'reversed': reversed,
       'folder': folder,
-      'display': show,
     };
   }
 
@@ -529,7 +524,6 @@ class PathPlannerPath {
       fs: fs,
       reversed: reversed,
       folder: f,
-      show: show,
     );
   }
 

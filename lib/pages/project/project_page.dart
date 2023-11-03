@@ -148,7 +148,6 @@ class _ProjectPageState extends State<ProjectPage> {
           pathDir: _pathsDirectory.path,
           name: 'Example Path',
           fs: fs,
-          show: true,
         ));
       }
 
@@ -377,7 +376,7 @@ class _ProjectPageState extends State<ProjectPage> {
                     waitDuration: const Duration(seconds: 1),
                     child: IconButton.filled(
                       onPressed: () {
-                        _addNewPath('New Path', true);
+                        _addNewPath('New Path');
                       },
                       icon: const Icon(Icons.add),
                     ),
@@ -582,7 +581,7 @@ class _ProjectPageState extends State<ProjectPage> {
                   childAspectRatio: _pathsCompact ? 2.5 : 1.55,
                   children: [
                     for (int i = 0; i < _paths.length; i++)
-                      if (_paths[i].folder == _pathFolder && _paths[i].show)
+                      if (_paths[i].folder == _pathFolder)
                         _buildPathCard(i, context),
                   ],
                 ),
@@ -672,7 +671,7 @@ class _ProjectPageState extends State<ProjectPage> {
     });
   }
 
-  void _addNewPath(String name, bool? show) {
+  void _addNewPath(String name) {
     List<String> pathNames = [];
     for (PathPlannerPath path in _paths) {
       pathNames.add(path.name);
@@ -698,7 +697,6 @@ class _ProjectPageState extends State<ProjectPage> {
         name: name,
         fs: fs,
         folder: _pathFolder,
-        show: show!,
       ));
       _sortPaths(_pathSortValue);
     });
