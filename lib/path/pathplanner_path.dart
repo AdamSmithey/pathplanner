@@ -234,13 +234,22 @@ class PathPlannerPath {
     }
   }
 
-  void renamePath(String name) {
-    File pathFile = fs.file(join(pathDir, '${this.name}.path'));
+  void renamePath(String newName) {
+    print(name + " " + newName);
+    Set<File> pathFiles = {
+      fs.file(join(pathDir, '$name.path')), 
+      fs.file(join(pathDir, 'team/$name Red.path')),
+      fs.file(join(pathDir, 'team/$name Blue.path')),
+      fs.file(join(pathDir, 'trajectories/$name.json')), 
+      fs.file(join(pathDir, 'team/trajectories/$name Red.json')),
+      fs.file(join(pathDir, 'team/trajectories/$name Blue.json'))};
 
-    if (pathFile.existsSync()) {
-      pathFile.rename(join(pathDir, '$name.path'));
+    for(File file in pathFiles) {
+      if (file.existsSync()) {
+        file.renameSync(file.path.split('/').reversed.join('/').replaceFirst(name, newName).split('/').reversed.join('/'));
+      }
     }
-    this.name = name;
+    name = newName;
     lastModified = DateTime.now().toUtc();
   }
 

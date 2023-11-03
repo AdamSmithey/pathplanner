@@ -106,13 +106,18 @@ class PathPlannerAuto {
     return autos;
   }
 
-  void rename(String name) {
-    File autoFile = fs.file(join(autoDir, '${this.name}.auto'));
+  void rename(String newName) {
+    Set<File> autoFiles = {
+      fs.file(join(autoDir, '$name.auto')), 
+      fs.file(join(autoDir, 'team/$name Red.auto')),
+      fs.file(join(autoDir, 'team/$name Blue.auto'))};
 
-    if (autoFile.existsSync()) {
-      autoFile.rename(join(autoDir, '$name.auto'));
+    for(File file in autoFiles) {
+      if (file.existsSync()) {
+        file.renameSync(file.path.split('/').reversed.join('/').replaceFirst(name, newName).split('/').reversed.join('/'));
+      }
     }
-    this.name = name;
+    name = newName;
     lastModified = DateTime.now().toUtc();
   }
 
@@ -120,10 +125,7 @@ class PathPlannerAuto {
     Set<File> autoFiles = {
       fs.file(join(autoDir, '$name.auto')), 
       fs.file(join(autoDir, 'team/$name Red.auto')),
-      fs.file(join(autoDir, 'team/$name Blue.auto')),
-      fs.file(join(autoDir, 'trajectories/$name.json')), 
-      fs.file(join(autoDir, 'team/trajectories/$name Red.json')),
-      fs.file(join(autoDir, 'team/trajectories/$name Blue.json'))};
+      fs.file(join(autoDir, 'team/$name Blue.auto'))};
 
     for(File file in autoFiles) {
       if (file.existsSync()) {
