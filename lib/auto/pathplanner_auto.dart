@@ -117,10 +117,18 @@ class PathPlannerAuto {
   }
 
   void delete() {
-    File autoFile = fs.file(join(autoDir, '$name.auto'));
+    Set<File> autoFiles = {
+      fs.file(join(autoDir, '$name.auto')), 
+      fs.file(join(autoDir, 'team/$name Red.auto')),
+      fs.file(join(autoDir, 'team/$name Blue.auto')),
+      fs.file(join(autoDir, 'trajectories/$name.json')), 
+      fs.file(join(autoDir, 'team/trajectories/$name Red.json')),
+      fs.file(join(autoDir, 'team/trajectories/$name Blue.json'))};
 
-    if (autoFile.existsSync()) {
-      autoFile.delete();
+    for(File file in autoFiles) {
+      if (file.existsSync()) {
+        file.delete();
+      } 
     }
   }
 

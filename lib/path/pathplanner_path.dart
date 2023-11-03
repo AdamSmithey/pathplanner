@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:math';
-import 'dart:io' as io;
 
 import 'package:file/file.dart';
 import 'package:flutter/foundation.dart';
@@ -138,11 +137,11 @@ class PathPlannerPath {
 
     if(parent!) {
       pathRed = duplicate('$name Red', 'team');
-      pathRed?.invert();
-      pathRed?.generateAndSavePath(false);
+      pathRed.invert();
+      pathRed.generateAndSavePath(false);
 
       pathBlue = duplicate('$name Blue', 'team');
-      pathBlue?.generateAndSavePath(false);
+      pathBlue.generateAndSavePath(false);
     }
 
     Stopwatch s = Stopwatch()..start();
@@ -170,8 +169,6 @@ class PathPlannerPath {
   }
 
   void generateAndSaveTrajectory() {
-    Stopwatch s = Stopwatch()..start();
-
     Trajectory trajectory = Trajectory.simulate(this, ChassisSpeeds());
 
     List<dynamic> list = List.empty(growable: true);
@@ -187,7 +184,7 @@ class PathPlannerPath {
       pathFile.writeAsString(encoder.convert(list));
       lastModified = DateTime.now().toUtc();
     } catch (ex, stack) {
-      Log.error('Failed to save path', ex, stack);
+      Log.error('Failed to save trajectory', ex, stack);
     }
   }
 
@@ -222,10 +219,18 @@ class PathPlannerPath {
   }
 
   void deletePath() {
-    File pathFile = fs.file(join(pathDir, '$name.path'));
+    Set<File> pathFiles = {
+      fs.file(join(pathDir, '$name.path')), 
+      fs.file(join(pathDir, 'team/$name Red.path')),
+      fs.file(join(pathDir, 'team/$name Blue.path')),
+      fs.file(join(pathDir, 'trajectories/$name.json')), 
+      fs.file(join(pathDir, 'team/trajectories/$name Red.json')),
+      fs.file(join(pathDir, 'team/trajectories/$name Blue.json'))};
 
-    if (pathFile.existsSync()) {
-      pathFile.delete();
+    for(File file in pathFiles) {
+      if (file.existsSync()) {
+        file.delete();
+      }
     }
   }
 
