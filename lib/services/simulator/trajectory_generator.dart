@@ -182,7 +182,6 @@ class TrajectoryGenerator {
         fs: MemoryFileSystem(),
         reversed: path.reversed,
         folder: null,
-        show: path.show,
       );
     }
 
@@ -231,7 +230,6 @@ class TrajectoryGenerator {
         fs: MemoryFileSystem(),
         reversed: path.reversed,
         folder: null,
-        show: path.show,
       );
     }
 
@@ -358,7 +356,6 @@ class TrajectoryGenerator {
       fs: MemoryFileSystem(),
       reversed: path.reversed,
       folder: null,
-      show: path.show,
     );
   }
 
