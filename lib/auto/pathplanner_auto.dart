@@ -196,8 +196,8 @@ class PathPlannerAuto {
   void _addNamedCommandsToSet(List<Command> commands) {
     for (Command cmd in commands) {
       if (cmd is NamedCommand) {
-        if (cmd.name != null) {
-          Command.named.add(cmd.name!);
+        if (cmd.name != null && cmd.path != null) {
+          Command.named.putIfAbsent(cmd.name!, () => cmd.path!);
           continue;
         }
       }

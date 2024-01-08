@@ -1,9 +1,5 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
-import 'package:pathplanner/path/path_point.dart';
 import 'package:pathplanner/path/pathplanner_path.dart';
-import 'package:pathplanner/path/waypoint.dart';
 import 'package:pathplanner/services/pplib_telemetry.dart';
 import 'package:pathplanner/widgets/conditional_widget.dart';
 import 'package:pathplanner/widgets/custom_appbar.dart';
@@ -11,7 +7,6 @@ import 'package:pathplanner/widgets/editor/split_path_editor.dart';
 import 'package:pathplanner/widgets/field_image.dart';
 import 'package:pathplanner/widgets/keyboard_shortcuts.dart';
 import 'package:pathplanner/widgets/renamable_title.dart';
-import 'package:pathplanner/widgets/update_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:undo/undo.dart';
 

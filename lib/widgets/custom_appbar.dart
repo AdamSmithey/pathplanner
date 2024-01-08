@@ -1,9 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
-
-import 'window_buttons.dart';
 
 class CustomAppBar extends AppBar {
   final Widget titleWidget;

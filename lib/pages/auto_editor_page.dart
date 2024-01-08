@@ -48,7 +48,6 @@ class _AutoEditorPageState extends State<AutoEditorPage> {
 
     List<String> autoPathNames = widget.auto.getAllPathNames();
 
-    //List<PathPlannerPath> autoPaths = List.empty();
     List<PathPlannerPath> autoPaths = autoPathNames
         .map((name) => widget.allPaths.firstWhere((path) => path.name == name))
         .toList();

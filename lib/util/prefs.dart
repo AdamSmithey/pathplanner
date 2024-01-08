@@ -21,6 +21,7 @@ class PrefsKeys {
   static const String snapToGuidelines = 'snapToGuidelines';
   static const String hidePathsOnHover = 'hidePathsOnHover';
   static const String saveBothPaths = 'saveBothPaths';
+  static const String commandPath = 'commandPath';
 }
 
 class Defaults {
@@ -44,4 +45,5 @@ class Defaults {
   static const bool snapToGuidelines = true;
   static const bool hidePathsOnHover = true;
   static const bool saveBothPaths = false;
+  static const String commandPath = '';
 }

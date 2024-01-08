@@ -44,8 +44,8 @@ class _NamedCommandWidgetState extends State<NamedCommandWidget> {
                   dropdownMenuEntries: List.generate(
                     Command.named.length,
                     (index) => DropdownMenuEntry(
-                      value: Command.named.elementAt(index),
-                      label: Command.named.elementAt(index),
+                      value: Command.named.keys.elementAt(index),
+                      label: Command.named.keys.elementAt(index),
                     ),
                   ),
                   inputDecorationTheme: InputDecorationTheme(
@@ -64,16 +64,17 @@ class _NamedCommandWidgetState extends State<NamedCommandWidget> {
                         currentScope.hasFocus) {
                       FocusManager.instance.primaryFocus!.unfocus();
                     }
-
+                    
                     String text = _controller.text;
                     widget.undoStack.add(Change(
                       widget.command.name,
                       () {
                         if (value != null) {
                           widget.command.name = value;
+                          widget.command.path = Command.named[value];
                         } else if (text.isNotEmpty) {
                           widget.command.name = text;
-                          Command.named.add(text);
+                          widget.command.path = Command.named[text];
                         }
                         _controller.text = text;
                         widget.onUpdated?.call();

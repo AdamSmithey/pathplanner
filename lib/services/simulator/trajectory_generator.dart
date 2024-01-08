@@ -484,6 +484,8 @@ class Trajectory {
         state.deltaPos = path.pathPoints[i].distanceAlongPath -
             path.pathPoints[i - 1].distanceAlongPath;
         state.velocity = path.goalEndState.velocity;
+        state.total = path.pathPoints[i].distanceAlongPath;
+
       } else if (i == 0) {
         Point delta = path.pathPoints[i + 1].position - state.position;
         state.headingRadians = atan2(delta.y, delta.x);
@@ -496,6 +498,7 @@ class Trajectory {
             state.headingRadians -= 2 * pi;
           }
         }
+        state.total = 0;
       } else {
         Point delta = path.pathPoints[i + 1].position - state.position;
         state.headingRadians = atan2(delta.y, delta.x);
@@ -507,6 +510,8 @@ class Trajectory {
             (pow(v0, 2) + (2 * constraints.maxAcceleration * state.deltaPos))
                 .abs());
         state.velocity = min(vMax, path.pathPoints[i].maxV);
+        state.total = path.pathPoints[i].distanceAlongPath;
+
 
         if (path.reversed) {
           state.headingRadians += pi;
@@ -515,6 +520,7 @@ class Trajectory {
           }
         }
       }
+
 
       states.add(state);
     }
@@ -558,6 +564,7 @@ class TrajectoryState {
   PathConstraints constraints = PathConstraints();
 
   num deltaPos = 0;
+  num total = 0;
 
   TrajectoryState();
 
@@ -593,7 +600,7 @@ class TrajectoryState {
       'time': time,
       'pose': {
         'rotation': {
-          'raidans': headingRadians,
+          'radians': headingRadians,
         },
         'translation': {
             'x': position.x,
@@ -602,6 +609,7 @@ class TrajectoryState {
       },
       'velocity': velocity,
       'holonomicRotation': holonomicRotationRadians,
+      'test': total,
     };
   }
 }

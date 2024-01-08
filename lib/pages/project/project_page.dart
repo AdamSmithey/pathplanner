@@ -58,6 +58,7 @@ class _ProjectPageState extends State<ProjectPage> {
   List<String> _autoFolders = [];
   late Directory _pathsDirectory;
   late Directory _autosDirectory;
+  late Directory _commandsDirectory;
   late String _pathSortValue;
   late String _autoSortValue;
   late bool _pathsCompact;
@@ -115,11 +116,17 @@ class _ProjectPageState extends State<ProjectPage> {
     _pathsDirectory.createSync(recursive: true);
     _autosDirectory = fs.directory(join(widget.deployDirectory.path, 'autos'));
     _autosDirectory.createSync(recursive: true);
+    _commandsDirectory = fs.directory(join(widget.deployDirectory.path, 'commands'));
+    _commandsDirectory.createSync(recursive: true);
+
+    Command.commandDir = _commandsDirectory;
 
     var paths =
         await PathPlannerPath.loadAllPathsInDir(_pathsDirectory.path, fs);
     var autos =
         await PathPlannerAuto.loadAllAutosInDir(_autosDirectory.path, fs);
+
+    Command.loadAllNamedCommands(fs, _commandsDirectory);
 
     List<String> allPathNames = [];
     for (PathPlannerPath path in paths) {
@@ -218,7 +225,7 @@ class _ProjectPageState extends State<ProjectPage> {
                           _replaceNamedCommand(
                               oldName, newName, m.command.commands);
                         }
-                        path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
+                        path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));
                       }
 
                       for (PathPlannerAuto auto in _autos) {
@@ -229,12 +236,13 @@ class _ProjectPageState extends State<ProjectPage> {
                     });
                   },
                   onCommandDeleted: (String name) {
+                    Command.deleteNamed(dir: _commandsDirectory, name: name);
                     setState(() {
                       for (PathPlannerPath path in _paths) {
                         for (EventMarker m in path.eventMarkers) {
                           _replaceNamedCommand(name, null, m.command.commands);
                         }
-                        path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
+                        path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));
                       }
 
                       for (PathPlannerAuto auto in _autos) {
@@ -242,8 +250,11 @@ class _ProjectPageState extends State<ProjectPage> {
                             name, null, auto.sequence.commands);
                         auto.saveFile(true);
                       }
+
+
                     });
                   },
+                  prefs: widget.prefs,
                 ),
               ),
               // Dumb hack to get an elevation surface tint
@@ -267,6 +278,7 @@ class _ProjectPageState extends State<ProjectPage> {
     for (Command cmd in commands) {
       if (cmd is NamedCommand && cmd.name == originalName) {
         cmd.name = newName;
+        cmd.path = Command.named[newName];
       } else if (cmd is CommandGroup) {
         _replaceNamedCommand(originalName, newName, cmd.commands);
       }
@@ -412,7 +424,7 @@ class _ProjectPageState extends State<ProjectPage> {
                       onAccept: (data) {
                         setState(() {
                           data.folder = null;
-                          data.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
+                          data.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));
                         });
                       },
                       builder: (context, candidates, rejects) {
@@ -548,7 +560,7 @@ class _ProjectPageState extends State<ProjectPage> {
                                                     if (path.folder ==
                                                         _pathFolders[i]) {
                                                       path.folder = newName;
-                                                      path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));;
+                                                      path.generateAndSavePath(widget.prefs.getBool(PrefsKeys.saveBothPaths));
                                                     }
                                                   }
                                                   _pathFolders[i] = newName;
@@ -594,7 +606,6 @@ class _ProjectPageState extends State<ProjectPage> {
   }
 
   Widget _buildPathCard(int i, BuildContext context) {
-    print(_paths.length);
     final pathCard = ProjectItemCard(
       name: _paths[i].name,
       compact: _pathsCompact,

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:math';
 
 import 'package:file/file.dart';
@@ -132,21 +131,23 @@ class PathPlannerPath {
     if(b) invert();
 
     if(parent!) {
-      pathRed = duplicate('$name Red', 'team');
-      pathRed.invert();
+      pathRed = duplicate('$name Red', 'team').invert();
       pathRed.generateAndSavePath(false);
 
       pathBlue = duplicate('$name Blue', 'team');
       pathBlue.generateAndSavePath(false);
+
+    } else {
+      generateAndSaveTrajectory();
     }
 
     Stopwatch s = Stopwatch()..start();
-
     generatePathPoints();
-    generateAndSaveTrajectory();
 
     try {
       File pathFile = fs.file(join(pathDir, '$name.path'));
+      pathFile.createSync(recursive: true);
+
       const JsonEncoder encoder = JsonEncoder.withIndent('  ');
       pathFile.writeAsString(encoder.convert(this));
       lastModified = DateTime.now().toUtc();
@@ -161,7 +162,6 @@ class PathPlannerPath {
 
     if(b) invert();
     generatePathPoints();
-
   }
 
   void generateAndSaveTrajectory() {
@@ -231,7 +231,6 @@ class PathPlannerPath {
   }
 
   void renamePath(String newName) {
-    print(name + " " + newName);
     Set<File> pathFiles = {
       fs.file(join(pathDir, '$name.path')), 
       fs.file(join(pathDir, 'team/$name Red.path')),
@@ -282,7 +281,7 @@ class PathPlannerPath {
     );
   }
 
-  void invert() {
+  PathPlannerPath invert() {
     inverted = !inverted;
     for(Waypoint w in waypoints) {
       w.invert();
@@ -293,6 +292,8 @@ class PathPlannerPath {
     }
 
     generatePathPoints();
+
+    return this;
   }
 
   void insertWaypointAfter(int waypointIdx) {
@@ -357,8 +358,8 @@ class PathPlannerPath {
 
   void _addNamedCommandsToSet(Command command) {
     if (command is NamedCommand) {
-      if (command.name != null) {
-        Command.named.add(command.name!);
+      if (command.name != null && command.path != null) {
+        Command.named.putIfAbsent(command.name!, () => command.path!);
         return;
       }
     }

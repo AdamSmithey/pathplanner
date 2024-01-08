@@ -65,7 +65,7 @@ class CommandGroupWidget extends StatelessWidget {
                     itemBuilder: (context) => const [
                       PopupMenuItem(
                         value: 'sequential',
-                        child: Text('Sequential Group'),
+                        child: Text('Sequential Groupe'),
                       ),
                       PopupMenuItem(
                         value: 'parallel',

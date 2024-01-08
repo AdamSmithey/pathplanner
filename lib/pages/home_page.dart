@@ -109,6 +109,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         );
       }
 
+      if(!widget.prefs.containsKey(PrefsKeys.commandPath) || widget.prefs.getString(PrefsKeys.commandPath) == null) {
+        widget.prefs.setString(PrefsKeys.commandPath, 'src');
+      }
+
       _initFromProjectDir(projectDir!);
 
       setState(() {
